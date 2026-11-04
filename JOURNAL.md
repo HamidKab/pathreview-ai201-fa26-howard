@@ -12,7 +12,7 @@
 [In 3–5 sentences, in your own words: what the issue is (not a copy-paste of
 the title), what is currently broken or missing, and what a successful fix
 would accomplish. Naming the part of the codebase it affects is helpful context.]
-The API at POST/reviews passes the authenticated user ID to the function create_review(). Despite that, review_service.py ignores that argument when creating the review. The service creates a review without checking that the profile belongs to the current user making it inconsistent with other logics in the code.
+The API at POST/reviews passes the authenticated user ID to the function create_review(). Despite that, review_service.py ignores that argument when creating the review. The service creates a review without checking that the profile belongs to the current user making it inconsistent with other logics in the code. Postfix the outcome should look like the user_id being used in review_services.py to authenticate the profile to the user.
 
 
 **Branch name:** [fix/67-review-creation-auth]
