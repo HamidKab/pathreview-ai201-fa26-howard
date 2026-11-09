@@ -22,3 +22,18 @@ The API at POST/reviews passes the authenticated user ID to the function create_
 **Setup confirmation:** [X] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
+
+## Unit 8 — Reproduction & solution planning
+
+**Reproduction commit link:** https://github.com/codepath/pathreview-ai201-fa26-howard/commit/2c70dbe79da7ec964f4a5d1304fe5343487ec207
+
+**Reproduction summary:**
+I reproduced this bug in the terminal using curl. In the terminal I logged in as both users and made a review on User B's account (token) with User A's profile ID. Instead of getting a 404 error it got a 200 ok
+{"id":"2f89fded-3a6b-4615-9840-ec0108bad6b6","profile_id":"5e7a2c3f-df16-4e4a-b2dd-c91cac07a1f4","status":"pending","sections":null,"overall_score":null,"error_message":null,"created_at":"2026-11-09T08:41:54.294938Z","updated_at":"2026-11-09T08:41:54.294948Z"}
+
+**PLAN.md link:** [link to PLAN.md in your fork]
+
+**Walkthrough video (recommended):** [link to your Loom video, ≤2 min — recommended, not graded]
+
+**Blockers or open questions:**
+[Anything you're still uncertain about going into Unit 9, or leave blank]
