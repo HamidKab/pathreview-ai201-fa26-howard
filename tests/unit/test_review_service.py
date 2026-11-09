@@ -4,12 +4,61 @@ from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
 import pytest
+from fastapi import HTTPException
 
 from core.services.review_service import (
     create_review,
     get_review,
     list_reviews,
 )
+
+# Ways a fixed create_review may reasonably signal "profile not found / not yours".
+OWNERSHIP_REJECTION_ERRORS = (HTTPException, LookupError, PermissionError, ValueError)
+
+
+@pytest.mark.unit
+class TestCreateReviewOwnership:
+    """Issue #67: create_review must verify the profile belongs to user_id."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.xfail(
+        strict=True, reason="issue #67: create_review does not verify profile ownership"
+    )
+    async def test_create_review_rejects_profile_owned_by_another_user(
+        self, make_profile_lookup_session, user_a_profile, user_b_id
+    ):
+        """User B must not be able to create a review on User A's profile."""
+        # The ownership-filtered query finds nothing for User B; the profile
+        # itself does exist (owned by User A) if looked up by primary key.
+        db = make_profile_lookup_session(query_result=None, get_result=user_a_profile)
+
+        result = None
+        try:
+            with patch("core.services.review_service.Review"):
+                result = await create_review(db, user_a_profile.id, user_b_id)
+        except OWNERSHIP_REJECTION_ERRORS as exc:
+            if isinstance(exc, HTTPException):
+                assert exc.status_code == 404
+        else:
+            assert result is None, "review created for a profile User B does not own"
+
+        db.add.assert_not_called()
+        db.commit.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_create_review_allows_profile_owner(
+        self, make_profile_lookup_session, user_a_profile, user_a_id
+    ):
+        """The profile's owner can still create a review (guards against over-fixing)."""
+        db = make_profile_lookup_session(query_result=user_a_profile, get_result=user_a_profile)
+
+        with patch("core.services.review_service.Review") as MockReview:
+            result = await create_review(db, user_a_profile.id, user_a_id)
+
+        assert result is MockReview.return_value
+        assert MockReview.call_args.kwargs["profile_id"] == user_a_profile.id
+        db.add.assert_called_once_with(MockReview.return_value)
+        db.commit.assert_called_once()
 
 
 @pytest.mark.unit
