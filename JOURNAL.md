@@ -31,9 +31,44 @@ The API at POST/reviews passes the authenticated user ID to the function create_
 I reproduced this bug in the terminal using curl. In the terminal I logged in as both users and made a review on User B's account (token) with User A's profile ID. Instead of getting a 404 error it got a 200 ok
 {"id":"2f89fded-3a6b-4615-9840-ec0108bad6b6","profile_id":"5e7a2c3f-df16-4e4a-b2dd-c91cac07a1f4","status":"pending","sections":null,"overall_score":null,"error_message":null,"created_at":"2026-11-09T08:41:54.294938Z","updated_at":"2026-11-09T08:41:54.294948Z"}
 
-**PLAN.md link:** [link to PLAN.md in your fork]
+**PLAN.md link:**  https://github.com/codepath/pathreview-ai201-fa26-howard/commit/2db9665ab19746bb86735d4e1d083bb1221b86f8
 
 **Walkthrough video (recommended):** [link to your Loom video, ≤2 min — recommended, not graded]
 
 **Blockers or open questions:**
 [Anything you're still uncertain about going into Unit 9, or leave blank]
+
+## Unit 9
+
+### Check-in 1 (mid-week)
+
+**Current progress:**
+I added a check in `create_review()` to make sure the profile belongs to the logged-in user before creating a review. If the profile belongs to someone else or does not exist, the request returns 404 "Profile not found" without saving a review or starting background processing. The route already handles this error correctly, so it did not need changes.
+
+I updated the existing review creation tests, removed the expected-failure marker for issue #67, and added tests for another user's profile, a missing profile, and the owner's own profile. The completed PLAN.md tasks are the ownership check, unit test updates, route tests, lint, and type checking. All 378 unit tests and 3 route tests passed, with 53 existing expected failures. The manual curl check after the fix is still pending.
+
+**Next steps:**
+Finish the manual verification from `PLAN.md`, then address any PR feedback.
+
+**Blockers:** None.
+
+---
+
+### Check-in 2 (end of week)
+
+**PR link:** https://github.com/codepath/pathreview-ai201-fa26-howard/pull/91
+
+**Branch:** fix/67-review-creation-auth
+
+**What you built:**
+I fixed review creation so users can only create reviews for profiles they own. The code checks the profile ID and logged-in user's ID before saving a review. If the profile belongs to someone else or does not exist, it returns 404 "Profile not found" and does not start background processing.
+
+**Tests added or updated:**
+I updated `tests/unit/test_review_service.py` to verify that owners can create reviews and that missing profiles and profiles owned by another user raise 404 before any database write. I removed the expected-failure marker for issue #67 and updated the database mocks for the ownership lookup. I added `tests/security/test_review_creation_ownership.py` to verify that `POST /reviews` returns 200 with a pending review and starts background processing for the owner. Both rejection cases return 404 with `Profile not found`, without writing a review or starting background processing.
+
+**Self-review confirmation:**
+
+- [x] `make check` passes
+- [x] `make test-unit` passes (378 passed, 53 expected failures)
+
+**Draft PR feedback received from:** Kingston Davies
